@@ -1,0 +1,1 @@
+# SaleStock Technical Assignment
