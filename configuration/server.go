@@ -9,7 +9,8 @@ import (
 )
 
 type ServerConfig struct {
-	Host string `json:"host"`
+	Host   string `json:"host"`
+	JWTKey string `json:"jwt_key"`
 }
 
 func Server() *ServerConfig {
