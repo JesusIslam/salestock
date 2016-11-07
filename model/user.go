@@ -10,7 +10,7 @@ import (
 type User struct {
 	ID       bson.ObjectId `bson:"_id,omitempty" json:"id,omitempty"`
 	Username string        `bson:"username,omitempty" json:"username,omitempty"`
-	Status   string        `bson:"status,omitempty" json:"status,omitempty"`
+	Role     string        `bson:"role,omitempty" json:"role,omitempty"`
 }
 
 func (u *User) Validate() (err error) {
@@ -18,12 +18,12 @@ func (u *User) Validate() (err error) {
 		err = errors.New("Invalid User.username: must be between 6 and 32 characters long")
 	}
 
-	switch u.Status {
+	switch u.Role {
 	case "admin":
 	case "customer":
 		break
 	default:
-		err = errors.New("Invalid User.customer: must be either admin or customer")
+		err = errors.New("Invalid User.role: must be either admin or customer")
 	}
 
 	return err

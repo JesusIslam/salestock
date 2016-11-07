@@ -80,5 +80,5 @@ type Shipment struct {
 	PhoneNumber string        `bson:"phone_number,omitempty" json:"phone_number,omitempty"`
 	Email       string        `bson:"email,omitempty" json:"email,omitempty"`
 	Address     string        `bson:"address,omitempty" json:"address,omitempty"`
-	Status      string        `bson:"status,omitempty" json:"status,omitempty"` // not_send, on_progress, arrived
+	Status      string        `bson:"status,omitempty" json:"status,omitempty"` // not_send, on_progress, arrived, accepted
 }
