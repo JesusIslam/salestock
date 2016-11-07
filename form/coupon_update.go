@@ -8,9 +8,11 @@ import (
 )
 
 type CouponUpdate struct {
-	ID         bson.ObjectId `json:"id"`
-	Quantity   int           `json:"quantity"`
-	ValidUntil time.Time     `json:"valid_until"`
+	ID           bson.ObjectId `json:"id"`
+	Quantity     int           `json:"quantity"`
+	ValidUntil   time.Time     `json:"valid_until"`
+	Discount     float64       `json:"discount"`
+	DiscountType string        `json:"discount_type"`
 }
 
 func (c *CouponUpdate) ToUpdateData() (id bson.ObjectId, data bson.M) {
@@ -24,6 +26,14 @@ func (c *CouponUpdate) ToUpdateData() (id bson.ObjectId, data bson.M) {
 		data["valid_until"] = c.ValidUntil
 	}
 
+	if c.Discount != 0 {
+		data["discount"] = c.Discount
+	}
+
+	if c.DiscountType != "" {
+		data["discount_type"] = c.DiscountType
+	}
+
 	return id, data
 }
 
@@ -35,6 +45,20 @@ func (c *CouponUpdate) Validate() (err error) {
 	if !c.ValidUntil.IsZero() {
 		if time.Now().After(c.ValidUntil) {
 			err = errors.New("Invalid Coupon.valid_until: cannot be before current server time")
+		}
+	}
+
+	if c.Discount < 0 {
+		err = errors.New("Invalid Coupon.discount: cannot be less than 0")
+	}
+
+	if c.DiscountType != "" {
+		switch c.DiscountType {
+		case "percentage":
+		case "nominal":
+			break
+		default:
+			err = errors.New("Invalid Coupon.discount_type: must be percentage or nominal")
 		}
 	}
 
