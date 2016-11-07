@@ -16,23 +16,27 @@ type CouponUpdate struct {
 }
 
 func (c *CouponUpdate) ToUpdateData() (id bson.ObjectId, data bson.M) {
+	data = bson.M{}
 	id = c.ID
 
-	data["quantity"] = bson.M{
-		"$inc": c.Quantity,
+	data["$inc"] = bson.M{
+		"quantity": c.Quantity,
 	}
 
+	update := bson.M{}
 	if !c.ValidUntil.IsZero() {
-		data["valid_until"] = c.ValidUntil
+		update["valid_until"] = c.ValidUntil
 	}
 
 	if c.Discount != 0 {
-		data["discount"] = c.Discount
+		update["discount"] = c.Discount
 	}
 
 	if c.DiscountType != "" {
-		data["discount_type"] = c.DiscountType
+		update["discount_type"] = c.DiscountType
 	}
+
+	data["$set"] = update
 
 	return id, data
 }

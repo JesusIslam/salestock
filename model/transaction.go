@@ -8,17 +8,24 @@ import (
 )
 
 type Transaction struct {
-	ID          bson.ObjectId   `bson:"_id,omitempty" json:"id,omitempty"`
-	CouponID    bson.ObjectId   `bson:"coupon_id,omitempty" json:"coupon_id,omitempty"`
-	CustomerID  bson.ObjectId   `bson:"customer_id,omitempty" json:"customer_id,omitempty"`
-	Products    []bson.ObjectId `bson:"products,omitempty" json:"products,omitempty"`
-	OrderStatus string          `bson:"order_status,omitempty" json:"order_status,omitempty"` // submitted, valid, invalid
-	Shipment    *Shipment       `bson:"shipment,omitempty" json:"shipment,omitempty"`
+	ID         bson.ObjectId `bson:"_id,omitempty" json:"id,omitempty"`
+	CouponID   bson.ObjectId `bson:"coupon_id,omitempty" json:"coupon_id,omitempty"`
+	CustomerID bson.ObjectId `bson:"customer_id,omitempty" json:"customer_id,omitempty"`
+	Products   []*struct {
+		ID        bson.ObjectId `json:"id,omitempty"`
+		Name      string        `json:"name,omitempty"`
+		PriceEach float64       `json:"price_each,omitempty"`
+	} `bson:"products,omitempty" json:"products,omitempty"`
+	TotalPrice  float64   `json:"total_price"`
+	OrderStatus string    `bson:"order_status,omitempty" json:"order_status,omitempty"` // submitted, valid, invalid
+	Shipment    *Shipment `bson:"shipment,omitempty" json:"shipment,omitempty"`
 }
 
 func (t *Transaction) Validate() (err error) {
-	if !bson.IsObjectIdHex(t.CouponID.Hex()) {
-		err = errors.New("Invalid Transaction.coupon_id: not a valid ObjectId")
+	if t.CouponID != "" {
+		if !bson.IsObjectIdHex(t.CouponID.Hex()) {
+			err = errors.New("Invalid Transaction.coupon_id: not a valid ObjectId")
+		}
 	}
 
 	if !bson.IsObjectIdHex(t.CustomerID.Hex()) {
@@ -26,8 +33,14 @@ func (t *Transaction) Validate() (err error) {
 	}
 
 	for _, p := range t.Products {
-		if !bson.IsObjectIdHex(p.Hex()) {
-			err = errors.New("Invalid Transaction.products element: not a valid ObjectId found")
+		if !bson.IsObjectIdHex(p.ID.Hex()) {
+			err = errors.New("Invalid Transaction.products element: id not a valid ObjectId found")
+		}
+		if !govalidator.IsByteLength(p.Name, 1, 128) {
+			err = errors.New("Invalid Transaction.products element: name must be between 1 and 128 characters long")
+		}
+		if p.PriceEach < 0 {
+			p.PriceEach = 0
 		}
 	}
 
@@ -41,10 +54,6 @@ func (t *Transaction) Validate() (err error) {
 	}
 
 	if t.Shipment != nil {
-		if !bson.IsObjectIdHex(t.Shipment.ID.Hex()) {
-			err = errors.New("Invalid Transaction.shipment.id: not a valid ObjectId")
-		}
-
 		if !govalidator.IsByteLength(t.Shipment.Name, 1, 128) {
 			err = errors.New("Invalid Transaction.shipment.name: must be between 1 and 128 characters long")
 		}
@@ -60,25 +69,16 @@ func (t *Transaction) Validate() (err error) {
 		if !govalidator.IsByteLength(t.Shipment.Address, 1, 128) {
 			err = errors.New("Invalid Transaction.shipment.address: must be between 1 and 128 characters long")
 		}
-
-		switch t.Shipment.Status {
-		case "not_send":
-		case "valid":
-		case "invalid":
-			break
-		default:
-			err = errors.New("Invalid Transaction.shipment.status: must be not_send, valid, or invalid")
-		}
 	}
 
 	return err
 }
 
 type Shipment struct {
-	ID          bson.ObjectId `bson:"id,omitempty" json:"id,omitempty"`
-	Name        string        `bson:"name,omitempty" json:"name,omitempty"`
-	PhoneNumber string        `bson:"phone_number,omitempty" json:"phone_number,omitempty"`
-	Email       string        `bson:"email,omitempty" json:"email,omitempty"`
-	Address     string        `bson:"address,omitempty" json:"address,omitempty"`
-	Status      string        `bson:"status,omitempty" json:"status,omitempty"` // not_send, on_progress, arrived, accepted
+	ID          string `bson:"id,omitempty" json:"id,omitempty"`
+	Name        string `bson:"name,omitempty" json:"name,omitempty"`
+	PhoneNumber string `bson:"phone_number,omitempty" json:"phone_number,omitempty"`
+	Email       string `bson:"email,omitempty" json:"email,omitempty"`
+	Address     string `bson:"address,omitempty" json:"address,omitempty"`
+	Status      string `bson:"status,omitempty" json:"status,omitempty"` // not_send, on_progress, arrived, accepted
 }

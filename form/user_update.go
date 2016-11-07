@@ -18,19 +18,23 @@ type UserUpdate struct {
 }
 
 func (u *UserUpdate) ToUpdateData() (id bson.ObjectId, data bson.M) {
+	data = bson.M{}
 	id = u.ID
 
+	update := bson.M{}
 	if u.Username != "" {
-		data["username"] = u.Username
+		update["username"] = u.Username
 	}
 
 	if u.Role != "" {
-		data["role"] = u.Role
+		update["role"] = u.Role
 	}
 
 	if u.Password != "" {
-		data["password"] = u.Password
+		update["password"] = u.Password
 	}
+
+	data["$set"] = update
 
 	return id, data
 }

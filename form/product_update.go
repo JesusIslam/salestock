@@ -15,18 +15,21 @@ type ProductUpdate struct {
 }
 
 func (p *ProductUpdate) ToUpdateData() (id bson.ObjectId, data bson.M) {
+	data = bson.M{}
 	id = p.ID
 
+	update := bson.M{}
 	if p.Name != "" {
-		data["name"] = p.Name
+		update["name"] = p.Name
 	}
 
 	if p.Price > 0 {
-		data["price"] = p.Price
+		update["price"] = p.Price
 	}
 
-	data["quantity"] = bson.M{
-		"$inc": p.Quantity,
+	data["$set"] = update
+	data["$inc"] = bson.M{
+		"quantity": p.Quantity,
 	}
 
 	return id, data

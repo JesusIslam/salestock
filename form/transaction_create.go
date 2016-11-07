@@ -32,6 +32,8 @@ func (t *TransactionCreate) Validate() (err error) {
 				err = errors.New("Invalid Transaction.products: not a valid ObjectId in one of the elements")
 			}
 		}
+	} else {
+		err = errors.New("Invalid Transaction.products: cannot be empty")
 	}
 
 	if t.OrderStatus != "" {
@@ -49,21 +51,6 @@ func (t *TransactionCreate) Validate() (err error) {
 	if t.Shipment == nil {
 		err = errors.New("Invalid Transaction.shipment: cannot be nil")
 	} else {
-		if t.Shipment.ID != "" {
-			if !bson.IsObjectIdHex(t.Shipment.ID.Hex()) {
-				err = errors.New("Invalid Transaction.shipment.id: not a valid ObjectId")
-			}
-
-			switch t.Shipment.Status {
-			case "not_send":
-			case "valid":
-			case "invalid":
-				break
-			default:
-				err = errors.New("Invalid Transaction.shipment.status: must be not_send, valid, or invalid")
-			}
-		}
-
 		if !govalidator.IsByteLength(t.Shipment.Name, 1, 128) {
 			err = errors.New("Invalid Transaction.shipment.name: must be between 1 and 128 characters long")
 		}
@@ -85,10 +72,10 @@ func (t *TransactionCreate) Validate() (err error) {
 }
 
 type Shipment struct {
-	ID          bson.ObjectId `json:"id,omitempty"`
-	Name        string        `json:"name,omitempty"`
-	PhoneNumber string        `json:"phone_number,omitempty"`
-	Email       string        `json:"email,omitempty"`
-	Address     string        `json:"address,omitempty"`
-	Status      string        `json:"status,omitempty"` // not_send, on_progress, arrived
+	ID          string `json:"id,omitempty"`
+	Name        string `json:"name,omitempty"`
+	PhoneNumber string `json:"phone_number,omitempty"`
+	Email       string `json:"email,omitempty"`
+	Address     string `json:"address,omitempty"`
+	Status      string `json:"status,omitempty"` // not_send, on_progress, arrived
 }

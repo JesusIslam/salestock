@@ -18,6 +18,7 @@ type ProductSearch struct {
 }
 
 func (p *ProductSearch) ToSearchQuery() (query bson.M) {
+	query = bson.M{}
 	if p.ID != "" {
 		query["_id"] = p.ID
 	}

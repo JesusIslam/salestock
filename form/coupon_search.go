@@ -20,6 +20,8 @@ type CouponSearch struct {
 }
 
 func (c *CouponSearch) ToSearchQuery() (query bson.M) {
+	query = bson.M{}
+
 	if c.ID != "" {
 		query["_id"] = c.ID
 	}

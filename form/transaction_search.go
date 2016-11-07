@@ -14,7 +14,7 @@ type TransactionSearch struct {
 	CustomerID  bson.ObjectId
 	ProductID   bson.ObjectId
 	OrderStatus string
-	ShipmentID  bson.ObjectId
+	ShipmentID  string
 	Name        string
 	PhoneNumber string
 	Email       string
@@ -23,6 +23,8 @@ type TransactionSearch struct {
 }
 
 func (t *TransactionSearch) ToSearchQuery() (query bson.M) {
+	query = bson.M{}
+
 	if t.ID != "" {
 		query["_id"] = t.ID
 	}
@@ -152,8 +154,8 @@ func (t *TransactionSearch) Validate() (err error) {
 	}
 
 	if t.ShipmentID != "" {
-		if !bson.IsObjectIdHex(t.ShipmentID.Hex()) {
-			err = errors.New("Invalid Transaction.shipment_id: not a valid ObjectId")
+		if !govalidator.IsByteLength(t.ShipmentID, 1, 128) {
+			err = errors.New("Invalid Transaction.shipment_id: must be between 1 and 128 characters long")
 		}
 	}
 

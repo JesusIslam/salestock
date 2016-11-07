@@ -15,6 +15,7 @@ type UserSearch struct {
 }
 
 func (u *UserSearch) ToSearchQuery() (query bson.M) {
+	query = bson.M{}
 	query["_id"] = u.ID
 
 	if u.Username != "" {

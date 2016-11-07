@@ -17,22 +17,20 @@ type TransactionUpdate struct {
 }
 
 func (t *TransactionUpdate) ToUpdateData() (id bson.ObjectId, data bson.M) {
+	data = bson.M{}
 	id = t.ID
 
+	update := bson.M{}
 	if t.CouponID != "" {
-		data["coupon_id"] = t.CouponID
+		update["coupon_id"] = t.CouponID
 	}
 
 	if t.CustomerID != "" {
-		data["customer_id"] = t.CustomerID
-	}
-
-	if len(t.Products) > 0 {
-		data["products"] = t.Products
+		update["customer_id"] = t.CustomerID
 	}
 
 	if t.OrderStatus != "" {
-		data["order_status"] = t.OrderStatus
+		update["order_status"] = t.OrderStatus
 	}
 
 	if t.Shipment != nil {
@@ -61,8 +59,10 @@ func (t *TransactionUpdate) ToUpdateData() (id bson.ObjectId, data bson.M) {
 			shipment["address"] = t.Shipment.Address
 		}
 
-		data["shipment"] = shipment
+		update["shipment"] = shipment
 	}
+
+	data["$set"] = update
 
 	return id, data
 }
@@ -106,8 +106,8 @@ func (t *TransactionUpdate) Validate() (err error) {
 
 	if t.Shipment != nil {
 		if t.Shipment.ID != "" {
-			if !bson.IsObjectIdHex(t.Shipment.ID.Hex()) {
-				err = errors.New("Invalid Transaction.shipment.id: not a valid ObjectId")
+			if !govalidator.IsByteLength(t.Shipment.ID, 1, 128) {
+				err = errors.New("Invalid Transaction.shipment.id: must be between 1 and 128 characters long")
 			}
 		}
 
